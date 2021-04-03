@@ -24,6 +24,7 @@ Make sure the "WP Time Slots Booking Form" plugin is already installed.
 
 == Screenshots ==
 
-1. Extended settings menu
+1. Extended settings
+2. Extended menu entry
 
 == Changelog ==
