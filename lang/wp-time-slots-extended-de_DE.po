@@ -13,3 +13,19 @@ msgstr ""
 "X-Generator: Poedit 2.4.2\n"
 "X-Poedit-KeywordsList: _;gettext;gettext_noop;_e;__\n"
 "X-Poedit-SearchPath-0: .\n"
+
+
+msgid "Extended Settings"
+msgstr "Erweiterte Einstellungen"
+
+msgid "Email notification on Cancelation"
+msgstr "Email Benachrichtigung bei Ablehnung"
+
+msgid "Email notification on Approval"
+msgstr "Email Benachrichtigung bei Genehmigung"
+
+msgid "Subject"
+msgstr "Betreff"
+
+msgid "Message"
+msgstr "Nachricht"

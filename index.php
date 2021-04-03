@@ -48,46 +48,63 @@ class Ole1986_WpTimeSlotExtended extends CP_TSLOTSBOOK_BaseClass {
     }
 
     public function extend_menu() {
-        add_submenu_page( $this->menu_parameter, 'Extended Settings', 'Extended Settings', 'edit_pages', $this->menu_parameter."_extended_settings", array($this, 'settings_page') );
+        add_submenu_page( $this->menu_parameter, 'Extended Settings', __('Extended Settings', 'wp-time-slots-extended'), 'edit_pages', $this->menu_parameter."_extended_settings", [$this, 'settings_page'], 2);
     }
 
     public function settings_page() {
 
         if (!empty($_POST)) {
             if ($_POST['submit'] == "Reset") {
+                delete_option('cp_cptslotextended_approved');
                 delete_option('cp_cptslotextended_subject_approved');
                 delete_option('cp_cptslotextended_body_approved');
+
+                delete_option('cp_cptslotextended_canceled');
                 delete_option('cp_cptslotextended_subject_canceled');
                 delete_option('cp_cptslotextended_body_canceled');
             } else {
+                update_option('cp_cptslotextended_approved', sanitize_key($_POST['cp_cptslotextended_approved']));
                 update_option('cp_cptslotextended_subject_approved', sanitize_text_field($_POST['cp_cptslotextended_subject_approved']));
                 update_option('cp_cptslotextended_body_approved', sanitize_textarea_field($_POST['cp_cptslotextended_body_approved']));
+
+                update_option('cp_cptslotextended_canceled', sanitize_key($_POST['cp_cptslotextended_canceled']));
                 update_option('cp_cptslotextended_subject_canceled', sanitize_text_field($_POST['cp_cptslotextended_subject_canceled']));
                 update_option('cp_cptslotextended_body_canceled', sanitize_textarea_field($_POST['cp_cptslotextended_body_canceled']));
             }
         }
 
         ?>
-        <h1>WP Time Slots Extended - <?php _e('General Settings','wp-time-slots-booking-form'); ?></h1>
+        <h1>WP Time Slots Extended</h1>
         <form name="updatesettings" action="" method="post">
-            <h3>Email notification on Approval</h3>
+            <h3><?php _e('Email notification on Approval', 'wp-time-slots-extended') ?></h3>
+            <p>
+                <label><input type="checkbox" name="cp_cptslotextended_approved" value="1" <?php echo (get_option('cp_cptslotextended_approved', 0) ? 'checked' : '') ?>>
+                    <?php _e('Notify the user when its booked slot status has been changed to approved', 'wp-time-slots-extended') ?>
+                </label>
+            </p>
             <div>
-                <label>Subject</label><br />
+                <label><?php _e('Subject', 'wp-time-slots-extended') ?></label><br />
                 <input type="text" name="cp_cptslotextended_subject_approved" size="70" value="<?php echo esc_attr(get_option('cp_cptslotextended_subject_approved', 'Your Slot has been approved')); ?>" /><br />
             </div>
 
             <div>
-                <label>Body</label><br />
+                <label><?php _e('Message', 'wp-time-slots-extended') ?></label><br />
                 <textarea name="cp_cptslotextended_body_approved" rows="10" cols="70"><?php echo esc_attr(get_option('cp_cptslotextended_body_approved', "Dear %email%,\r\n\r\nWe have just confirmed your slot on %formname% / %fieldname1%")); ?></textarea><br />
             </div>
             <div>&nbsp;</div>
-            <h3>Email notification on Cancelation</h3>
+            <h3><?php _e('Email notification on Cancelation', 'wp-time-slots-extended') ?></h3>
+            <p>
+                <label>
+                    <input type="checkbox" name="cp_cptslotextended_canceled" value="1" <?php echo (get_option('cp_cptslotextended_canceled', 0) ? 'checked' : '') ?>>
+                    <?php _e('Notify the user when its booked slot status has been changed to canceled', 'wp-time-slots-extended') ?>
+                </label>
+            </p>
             <div>
-                <label>Subject</label><br />
+            <label><?php _e('Subject', 'wp-time-slots-extended') ?></label><br />
                 <input type="text" name="cp_cptslotextended_subject_canceled" size="70" value="<?php echo esc_attr(get_option('cp_cptslotextended_subject_canceled', 'Your Slot has been CANCELED')); ?>" /><br />
             </div>
             <div>
-                <label>Body</label><br />
+                <label><?php _e('Message', 'wp-time-slots-extended') ?></label><br />
                 <textarea name="cp_cptslotextended_body_canceled" rows="10" cols="70"><?php echo esc_attr(get_option('cp_cptslotextended_body_canceled', "Dear %email%,\r\n\r\nwe deeply regret that we had to cance your slot on %formname% / %fieldname1%")); ?></textarea><br />
             </div>
             <div>&nbsp;</div>
@@ -111,11 +128,13 @@ class Ole1986_WpTimeSlotExtended extends CP_TSLOTSBOOK_BaseClass {
 
         switch($status) {
             default:
+                if (empty(get_option('cp_cptslotextended_approved'))) return;
                 $subject = get_option('cp_cptslotextended_subject_approved', 'Your Slot has been approved');
                 $body = get_option('cp_cptslotextended_body_approved',  "Dear %email%,\r\n\r\nWe have just confirmed your slot on %formname% / %fieldname1%");
                 break;
             case 'canceled':
             case 'cancelled':
+                if (empty(get_option('cp_cptslotextended_canceled'))) return;
                 $subject = get_option('cp_cptslotextended_subject_canceled', 'Your Slot has been CANCELED');
                 $body = get_option('cp_cptslotextended_body_canceled',  "Dear %email%,\r\n\r\nwe deeply regret that we had to cance your slot on %formname% / %fieldname1%");
                 break;
