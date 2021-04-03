@@ -1,0 +1,13 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Generate language",
+            "type": "shell",
+            "command": "msgfmt lang/wp-time-slots-extended-de_DE.po -o lang/wp-time-slots-extended-de_DE.mo",
+            "problemMatcher": []
+        }
+    ]
+}
