@@ -1,28 +1,28 @@
 <?php
 /*
-Plugin Name: WP Time Slots Extended
+Plugin Name: Appointment Hour Booking Extended
 Plugin URI: https://wptimeslot.dwbooster.com/
-Description: Time Slots / Extended Functions
-Version: 1.0.0
+Description: Appointment Hour Booking Extended Functions
+Version: 1.0.1
 Author: ole1986
 License: MIT
 Text Domain: wp-time-slots-extended
 */
 
-require_once __DIR__ .'/../wp-time-slots-booking-form/classes/cp-base-class.inc.php';
+require_once __DIR__ .'/../appointment-hour-booking/classes/cp-base-class.inc.php';
 
-class Ole1986_WpTimeSlotExtended extends CP_TSLOTSBOOK_BaseClass {
+class Ole1986_AppointmentHourBookingExtended extends CP_APPBOOK_BaseClass {
     /**
      * The unique instance of the plugin.
      *
-     * @var Ole1986_WpTimeSlotExtended
+     * @var Ole1986_AppointmentHourBookingExtended
      */
     private static $instance;
 
     /**
      * Gets an instance of our plugin.
      *
-     * @return Ole1986_WpTimeSlotExtended
+     * @return Ole1986_AppointmentHourBookingExtended
      */
     public static function get_instance()
     {
@@ -34,17 +34,29 @@ class Ole1986_WpTimeSlotExtended extends CP_TSLOTSBOOK_BaseClass {
     }
 
 
-    private $menu_parameter = 'cp_timeslotsbooking';
+    private $menu_parameter = 'cp_apphourbooking';
 
-    public $table_items = "cptslotsbk_forms";
-    public $table_messages = "cptslotsbk_messages";
+    public $table_items = "cpappbk_forms";
+    public $table_messages = "cpappbk_messages";
 
     public function __construct() {
         load_plugin_textdomain('wp-time-slots-extended', false, dirname(plugin_basename(__FILE__)) . '/lang/');
 
-        add_action('cptslotsb_update_status', [$this, 'onUpdateStatus'], 10, 2);
+        add_action('cpappb_update_status', [$this, 'onUpdateStatus'], 10, 2);
 
         add_action('admin_menu',  [$this, 'extend_menu']);
+        add_action('cpappb_process_data_before_insert', [$this, 'check_single_insert']);
+
+        add_action( 'wp_head', [$this, 'scripts'] );
+    }
+
+    public function scripts() {
+        ?>
+        <script>
+            /* workaroung to display available slots */
+            var cp_hourbk_cmpublic = true;
+        </script>
+        <?php
     }
 
     public function extend_menu() {
@@ -62,6 +74,10 @@ class Ole1986_WpTimeSlotExtended extends CP_TSLOTSBOOK_BaseClass {
                 delete_option('cp_cptslotextended_canceled');
                 delete_option('cp_cptslotextended_subject_canceled');
                 delete_option('cp_cptslotextended_body_canceled');
+
+                delete_option('cp_cptslotextended_max_registration');
+                delete_option('cp_cptslotextended_max_registration_daily');
+                delete_option('cp_cptslotextended_max_registration_url');
             } else {
                 update_option('cp_cptslotextended_approved', sanitize_key($_POST['cp_cptslotextended_approved']));
                 update_option('cp_cptslotextended_subject_approved', sanitize_text_field($_POST['cp_cptslotextended_subject_approved']));
@@ -70,6 +86,10 @@ class Ole1986_WpTimeSlotExtended extends CP_TSLOTSBOOK_BaseClass {
                 update_option('cp_cptslotextended_canceled', sanitize_key($_POST['cp_cptslotextended_canceled']));
                 update_option('cp_cptslotextended_subject_canceled', sanitize_text_field($_POST['cp_cptslotextended_subject_canceled']));
                 update_option('cp_cptslotextended_body_canceled', sanitize_textarea_field($_POST['cp_cptslotextended_body_canceled']));
+
+                update_option('cp_cptslotextended_max_registration', sanitize_key($_POST['cp_cptslotextended_max_registration']));
+                update_option('cp_cptslotextended_max_registration_daily', sanitize_key($_POST['cp_cptslotextended_max_registration_daily']));
+                update_option('cp_cptslotextended_max_registration_url', sanitize_text_field($_POST['cp_cptslotextended_max_registration_url']));
             }
         }
 
@@ -108,18 +128,50 @@ class Ole1986_WpTimeSlotExtended extends CP_TSLOTSBOOK_BaseClass {
                 <textarea name="cp_cptslotextended_body_canceled" rows="10" cols="70"><?php echo esc_attr(get_option('cp_cptslotextended_body_canceled', "Dear %email%,\r\n\r\nwe deeply regret that we had to cance your slot on %formname% / %fieldname1%")); ?></textarea><br />
             </div>
             <div>&nbsp;</div>
+            <h3><?php _e('Registration limits', 'wp-time-slots-extended') ?></h3>
+            <div>
+                <label><?php _e('Maximum allowed registrations per user and day', 'wp-time-slots-extended') ?></label><br />
+                <input type="number" name="cp_cptslotextended_max_registration" value="<?php echo esc_attr(get_option('cp_cptslotextended_max_registration', '')); ?>" /><br />
+            </div>
+            <div>
+                <label><?php _e('Redirect URL when max registrations reached', 'wp-time-slots-extended') ?></label><br />
+                <input type="text" name="cp_cptslotextended_max_registration_url" size="70" value="<?php echo esc_attr(get_option('cp_cptslotextended_max_registration_url', '/slot-register-limit')); ?>" /><br />
+            </div>
+            <div>&nbsp;</div>
             <input type="submit" name="submit" class="button button-primary" value="Update" />
             <input type="submit" name="submit" class="button" value="Reset" />
         </form>
         <?php
     }
 
+    public function check_single_insert(&$params)
+    {
+        global $wpdb;
+
+        $selectedDate = $params['apps'][0]['date'];
+
+        $maxAllowedRegistrations = intval(get_option('cp_cptslotextended_max_registration', ''));
+
+        // skip max allowed registration check
+        if (empty($maxAllowedRegistrations)) return;
+        
+        $countResult = $wpdb->get_col($wpdb->prepare('SELECT COUNT(*) FROM `'.$wpdb->prefix.$this->table_messages.'` WHERE DATE(time) = CURDATE() AND formid = %d AND notifyto = %s', $params['formid'], $params['email']));
+
+        $c = intval(array_pop($countResult));
+
+        if ($maxAllowedRegistrations > 0 && ($c + 1) > $maxAllowedRegistrations) {
+            $url = get_option('cp_cptslotextended_max_registration_url', '/slot-register-limit');
+            header("Location: ". $url);
+            exit(); 
+        }
+    }
+
     public function onUpdateStatus($id, $status) {
         global $wpdb;
 
-        define('CP_TSLOTSBOOK_DEFAULT_fp_from_email', get_the_author_meta('user_email', get_current_user_id()) );
+        define('CP_APPBOOK_DEFAULT_fp_from_email', get_the_author_meta('user_email', get_current_user_id()) );
         
-        $from = $this->get_option('fp_from_email', @CP_TSLOTSBOOK_DEFAULT_fp_from_email);
+        $from = $this->get_option('fp_from_email', @CP_APPBOOK_DEFAULT_fp_from_email);
 
         $events = $wpdb->get_results( $wpdb->prepare('SELECT * FROM `'.$wpdb->prefix.$this->table_messages.'` WHERE id=%d', $id) );
         $posted_data = unserialize($events[0]->posted_data);
@@ -151,4 +203,4 @@ class Ole1986_WpTimeSlotExtended extends CP_TSLOTSBOOK_BaseClass {
     }
 }
 
-Ole1986_WpTimeSlotExtended::get_instance();
+Ole1986_AppointmentHourBookingExtended::get_instance();

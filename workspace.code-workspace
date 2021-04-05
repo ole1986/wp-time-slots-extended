@@ -4,7 +4,7 @@
 			"path": "."
 		},
 		{
-			"path": "../wp-time-slots-booking-form"
+			"path": "../appointment-hour-booking"
 		}
 	],
 	"settings": {}

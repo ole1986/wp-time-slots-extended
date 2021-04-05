@@ -29,3 +29,9 @@ msgstr "Betreff"
 
 msgid "Message"
 msgstr "Nachricht"
+
+msgid "Notify the user when its booked slot status has been changed to approved"
+msgstr "Benachrichtige den Benutzer sobald der gebuchte Slot den Status genehmigt erhält"
+
+msgid "Notify the user when its booked slot status has been changed to canceled"
+msgstr "Benachrichtige den Benutzer sobald der gebuchte Slot den Status abgelehnt erhält"
