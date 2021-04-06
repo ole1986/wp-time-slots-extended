@@ -9,9 +9,18 @@ License: MIT
 Text Domain: wp-time-slots-extended
 */
 
-require_once __DIR__ .'/../appointment-hour-booking/classes/cp-base-class.inc.php';
+include_once(ABSPATH.'wp-admin/includes/plugin.php');
 
-class Ole1986_AppointmentHourBookingExtended extends CP_APPBOOK_BaseClass {
+if (is_plugin_active('appointment-hour-booking/app-booking-plugin.php')) {
+    require_once __DIR__ .'/../appointment-hour-booking/classes/cp-base-class.inc.php';
+} else if (is_plugin_active('wp-time-slots-booking-form/wp-time-slots-booking-plugin.php')) {
+    require_once __DIR__ .'/../wp-time-slots-booking-form/classes/cp-base-class.inc.php';
+}
+
+require_once 'Base.php';
+
+
+class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase {
     /**
      * The unique instance of the plugin.
      *
@@ -33,21 +42,30 @@ class Ole1986_AppointmentHourBookingExtended extends CP_APPBOOK_BaseClass {
         return self::$instance;
     }
 
-
-    private $menu_parameter = 'cp_apphourbooking';
-
-    public $table_items = "cpappbk_forms";
-    public $table_messages = "cpappbk_messages";
-
     public function __construct() {
         load_plugin_textdomain('wp-time-slots-extended', false, dirname(plugin_basename(__FILE__)) . '/lang/');
 
+        if (empty($this->menu_parameter)) {
+            add_action('admin_notices', function() {
+                echo '<div class="notice notice-warning"><p>The <strong>Appointment Hour Booking Extended</strong> plugin requires either the "Appointment Hour Booking" or "WP Time Slots Booking Form" plugin</p></div>';
+            });
+            return;
+        }
+        
+        // appointment-hour-booking
         add_action('cpappb_update_status', [$this, 'onUpdateStatus'], 10, 2);
+        // wp-time-slots-booking-form
+        add_action('cptslotsb_update_status', [$this, 'onUpdateStatus'], 10, 2);
 
         add_action('admin_menu',  [$this, 'extend_menu']);
+
+        // appointment-hour-booking
         add_action('cpappb_process_data_before_insert', [$this, 'check_single_insert']);
+        // wp-time-slots-booking-form
+        add_action('cptslotsb_process_data_before_insert', [$this, 'check_single_insert']);
 
         add_action( 'wp_head', [$this, 'scripts'] );
+        add_action( 'admin_head', [$this, 'scripts'] );
     }
 
     public function scripts() {
@@ -169,9 +187,13 @@ class Ole1986_AppointmentHourBookingExtended extends CP_APPBOOK_BaseClass {
     public function onUpdateStatus($id, $status) {
         global $wpdb;
 
-        define('CP_APPBOOK_DEFAULT_fp_from_email', get_the_author_meta('user_email', get_current_user_id()) );
-        
-        $from = $this->get_option('fp_from_email', @CP_APPBOOK_DEFAULT_fp_from_email);
+        if (is_subclass_of($this, 'CP_APPBOOK_BaseClass')) {
+            define('CP_APPBOOK_DEFAULT_fp_from_email', get_the_author_meta('user_email', get_current_user_id()) );
+            $from = $this->get_option('fp_from_email', @CP_APPBOOK_DEFAULT_fp_from_email);
+        } else {
+            define('CP_TSLOTSBOOK_DEFAULT_fp_from_email', get_the_author_meta('user_email', get_current_user_id()) );
+            $from = $this->get_option('fp_from_email', @CP_TSLOTSBOOK_DEFAULT_fp_from_email);
+        }
 
         $events = $wpdb->get_results( $wpdb->prepare('SELECT * FROM `'.$wpdb->prefix.$this->table_messages.'` WHERE id=%d', $id) );
         $posted_data = unserialize($events[0]->posted_data);
@@ -179,11 +201,12 @@ class Ole1986_AppointmentHourBookingExtended extends CP_APPBOOK_BaseClass {
         $status = strtolower($status);
 
         switch($status) {
-            default:
+            case '':
                 if (empty(get_option('cp_cptslotextended_approved'))) return;
                 $subject = get_option('cp_cptslotextended_subject_approved', 'Your Slot has been approved');
                 $body = get_option('cp_cptslotextended_body_approved',  "Dear %email%,\r\n\r\nWe have just confirmed your slot on %formname% / %fieldname1%");
                 break;
+            case 'rejected':
             case 'canceled':
             case 'cancelled':
                 if (empty(get_option('cp_cptslotextended_canceled'))) return;

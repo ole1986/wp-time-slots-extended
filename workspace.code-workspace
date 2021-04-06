@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../appointment-hour-booking"
+		},
+		{
+			"path": "../wp-time-slots-booking-form"
 		}
 	],
 	"settings": {}
