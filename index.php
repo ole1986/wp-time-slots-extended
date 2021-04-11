@@ -3,7 +3,7 @@
 Plugin Name: Appointment Hour Booking Extended
 Plugin URI: https://wptimeslot.dwbooster.com/
 Description: Appointment Hour Booking Extended Functions
-Version: 1.0.4
+Version: 1.0.5
 Author: ole1986
 License: MIT
 Text Domain: wp-time-slots-extended
@@ -180,6 +180,9 @@ class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase {
     public function check_single_insert($params)
     {
         global $wpdb;
+
+        // allow adding additionals, with the same email from admin area
+        if (is_admin()) return;
 
         $selectedDate = $params['apps'][0]['date'];
 
