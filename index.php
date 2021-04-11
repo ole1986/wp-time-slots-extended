@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Appointment Hour Booking Extended
-Plugin URI: https://wptimeslot.dwbooster.com/
+Plugin URI: https://github.com/ole1986/wp-time-slots-extended
 Description: Appointment Hour Booking Extended Functions
 Version: 1.0.5
 Author: ole1986
