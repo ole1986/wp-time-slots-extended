@@ -70,6 +70,21 @@ class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase {
 
     public function scripts() {
         ?>
+        <style>
+            .ahb-section-container form > nobr {
+                display: inline-block;
+                margin-top: 1em;
+            }
+            .ahb-section-container form > nobr:nth-of-type(1) > input {
+                width: 300px;
+            }
+            .ahb-section-container form > nobr:nth-of-type(2) > input, .ahb-section-container form > nobr:nth-of-type(3) > input {
+                width: 105px;
+            }
+            .ahb-section-container form > div:last-child {
+                margin-top: 1em;
+            }
+        </style>
         <script>
             /* workaroung to display available slots */
             var cp_hourbk_cmpublic = true;
