@@ -177,7 +177,7 @@ class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase {
         <?php
     }
 
-    public function check_single_insert(&$params)
+    public function check_single_insert($params)
     {
         global $wpdb;
 
