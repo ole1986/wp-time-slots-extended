@@ -9,6 +9,10 @@ License: MIT
 Text Domain: wp-time-slots-extended
 */
 
+defined('ABSPATH') or die('No script kiddies please!');
+
+define('WP_TIME_SLOTS_EXTENDED_VERSION', '1.0.5');
+
 include_once(ABSPATH.'wp-admin/includes/plugin.php');
 
 if (is_plugin_active('appointment-hour-booking/app-booking-plugin.php')) {
@@ -18,7 +22,7 @@ if (is_plugin_active('appointment-hour-booking/app-booking-plugin.php')) {
 }
 
 require_once 'Base.php';
-
+require_once 'Dashboard.php';
 
 class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase {
     /**
@@ -66,6 +70,8 @@ class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase {
 
         add_action( 'wp_head', [$this, 'scripts'] );
         add_action( 'admin_head', [$this, 'scripts'] );
+
+        new Ole1986_AppointmentHourBookingExtendedDashboard();
     }
 
     public function scripts() {

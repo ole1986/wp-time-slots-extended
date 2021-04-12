@@ -30,6 +30,21 @@ msgstr "Betreff"
 msgid "Message"
 msgstr "Nachricht"
 
+msgid "Slot Booking Overview"
+msgstr "Slot Buchungs - Übersicht"
+
+msgid "Slot Bookings for today"
+msgstr "Slot - Buchungen für heute"
+
+msgid "Switch to calendar list"
+msgstr "Zur Kalender Liste wechseln"
+
+msgid "All periods"
+msgstr "Alle Zeiträume"
+
+msgid "Loading..."
+msgstr "Wird geladen..."
+
 msgid "Notify the user when its booked slot status has been changed to approved"
 msgstr "Benachrichtige den Benutzer sobald der gebuchte Slot den Status genehmigt erhält"
 

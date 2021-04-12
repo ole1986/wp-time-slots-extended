@@ -1,0 +1,25 @@
+#wp_time_slots_extended_dashboard_result {
+    margin-top: 1em;
+}
+
+#wp_time_slots_extended_dashboard_result > div.loading {
+    text-align: center;
+}
+
+#wp_time_slots_extended_dashboard_result > div {
+    padding: 0.5em;
+}
+#wp_time_slots_extended_dashboard_result div > div.headline {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+}
+
+#wp_time_slots_extended_dashboard_result div > div.detail {
+    
+}
+
+
+#wp_time_slots_extended_dashboard_result > div:nth-child(even) {
+    background-color: #ececec;
+}
