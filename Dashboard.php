@@ -79,13 +79,17 @@ class Ole1986_AppointmentHourBookingExtendedDashboard extends Ole1986_SlotBase
     public function content()
     {
         $this->fetchData();
+
+        $slots = [];
+
+        if (!empty($this->data)) {
+            $apps = array_merge(...array_map(function ($v) {
+                return $v['apps'];
+            }, $this->data));
+    
+            $slots = array_unique(array_column($apps, 'slot'));
+        }
         
-        $apps = array_merge(...array_map(function ($v) {
-            return $v['apps'];
-        }, $this->data));
-
-        $slots = array_unique(array_column($apps, 'slot'));
-
         ?>
         <div id="wp_time_slots_extended_dashboard" class="custom-dash-box">
             <div style="display: flex; justify-content: space-between">
