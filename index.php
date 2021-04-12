@@ -3,7 +3,7 @@
 Plugin Name: Appointment Hour Booking Extended
 Plugin URI: https://github.com/ole1986/wp-time-slots-extended
 Description: Appointment Hour Booking Extended Functions
-Version: 1.0.5
+Version: 1.0.6
 Author: ole1986
 License: MIT
 Text Domain: wp-time-slots-extended
@@ -11,7 +11,7 @@ Text Domain: wp-time-slots-extended
 
 defined('ABSPATH') or die('No script kiddies please!');
 
-define('WP_TIME_SLOTS_EXTENDED_VERSION', '1.0.5');
+define('WP_TIME_SLOTS_EXTENDED_VERSION', '1.0.6');
 
 include_once(ABSPATH.'wp-admin/includes/plugin.php');
 
