@@ -19,7 +19,8 @@ class Ole1986_AppointmentHourBookingExtendedDashboard extends Ole1986_SlotBase
             wp_enqueue_script('wp_time_slots_extended', plugins_url('scripts/init.js', __FILE__), null, WP_TIME_SLOTS_EXTENDED_VERSION);
             wp_localize_script('wp_time_slots_extended', 'wp_time_slots_extended', [
                 'ajaxurl' => admin_url('admin-ajax.php'),
-                'lang_loading' => __('Loading...', 'wp-time-slots-extended')
+                'lang_loading' => __('Loading...', 'wp-time-slots-extended'),
+                'lang_nodata' => __('No data found', 'wp-time-slots-extended')
             ]);    
         }
     }
@@ -38,7 +39,7 @@ class Ole1986_AppointmentHourBookingExtendedDashboard extends Ole1986_SlotBase
 
         ob_end_clean();
 
-        wp_send_json_success(  $output_string );
+        wp_send_json_success($output_string);
     }
     public function fetchData()
     {
@@ -59,9 +60,12 @@ class Ole1986_AppointmentHourBookingExtendedDashboard extends Ole1986_SlotBase
     {
         $this->fetchData();
         $slot = $_POST['slot'] ?? '';
+        $filter = $_POST['filter'] ?? '';
 
         foreach ($this->data as $item) {
             if (!empty($slot) && $item['apps'][0]['slot'] != $slot) continue;
+            if (!empty($filter) && stripos($item['email'], $filter) === false) continue;
+
             ?>
             <div>
                 <div class="headline">
@@ -88,6 +92,7 @@ class Ole1986_AppointmentHourBookingExtendedDashboard extends Ole1986_SlotBase
             }, $this->data));
     
             $slots = array_unique(array_column($apps, 'slot'));
+            sort($slots);
         }
         
         ?>
@@ -98,13 +103,18 @@ class Ole1986_AppointmentHourBookingExtendedDashboard extends Ole1986_SlotBase
                     <a href="admin.php?page=cp_apphourbooking"><?php _e('Switch to calendar list', 'wp-time-slots-extended') ?></a>
                 </div>
                 <div>
-                    <select id="wp_time_slots_extended_dashboard_time">
-                        <option value=""><?php _e('All periods', 'wp-time-slots-extended') ?></option>
-                <?php foreach ($slots as $item) {
-                        echo "<option>$item</option>";
-                }
-                ?>
-                    </select>
+                    <div>
+                        <select id="wp_time_slots_extended_dashboard_time" name="slot">
+                            <option value=""><?php _e('All periods', 'wp-time-slots-extended') ?></option>
+                    <?php foreach ($slots as $item) {
+                            echo "<option>$item</option>";
+                    }
+                    ?>
+                        </select>
+                    </div>
+                    <div style="margin-top: 0.5em">
+                        <input type="text" id="wp_time_slots_extended_dashboard_filter" name="filter" placeholder="<?php _e('Quick search', 'wp-time-slots-extended') ?>" />
+                    </div>
                 </div>
             </div>
             <div id="wp_time_slots_extended_dashboard_result">

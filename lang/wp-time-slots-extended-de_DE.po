@@ -42,8 +42,14 @@ msgstr "Zur Kalender Liste wechseln"
 msgid "All periods"
 msgstr "Alle Zeiträume"
 
+msgid "Quick search"
+msgstr "Schnellsuche"
+
 msgid "Loading..."
 msgstr "Wird geladen..."
+
+msgid "No data found"
+msgstr "Keine Daten gefunden"
 
 msgid "Notify the user when its booked slot status has been changed to approved"
 msgstr "Benachrichtige den Benutzer sobald der gebuchte Slot den Status genehmigt erhält"
