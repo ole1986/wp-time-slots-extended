@@ -46,11 +46,12 @@ class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase {
         return self::$instance;
     }
 
-    public function __construct() {
+    public function __construct()
+    {
         load_plugin_textdomain('wp-time-slots-extended', false, dirname(plugin_basename(__FILE__)) . '/lang/');
 
         if (empty($this->menu_parameter)) {
-            add_action('admin_notices', function() {
+            add_action('admin_notices', function () {
                 echo '<div class="notice notice-warning"><p>The <strong>Appointment Hour Booking Extended</strong> plugin requires either the "Appointment Hour Booking" or "WP Time Slots Booking Form" plugin</p></div>';
             });
             return;
@@ -68,13 +69,14 @@ class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase {
         // wp-time-slots-booking-form
         add_action('cptslotsb_process_data_before_insert', [$this, 'check_single_insert']);
 
-        add_action( 'wp_head', [$this, 'scripts'] );
-        add_action( 'admin_head', [$this, 'scripts'] );
+        add_action('wp_head', [$this, 'scripts']);
+        add_action('admin_head', [$this, 'scripts']);
 
         new Ole1986_AppointmentHourBookingExtendedDashboard();
     }
 
-    public function scripts() {
+    public function scripts()
+    {
         ?>
         <style>
             .ahb-section-container form > nobr {
@@ -98,12 +100,13 @@ class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase {
         <?php
     }
 
-    public function extend_menu() {
-        add_submenu_page( $this->menu_parameter, 'Extended Settings', __('Extended Settings', 'wp-time-slots-extended'), 'edit_pages', $this->menu_parameter."_extended_settings", [$this, 'settings_page'], 2);
+    public function extend_menu()
+    {
+        add_submenu_page($this->menu_parameter, 'Extended Settings', __('Extended Settings', 'wp-time-slots-extended'), 'edit_pages', $this->menu_parameter."_extended_settings", [$this, 'settings_page'], 2);
     }
 
-    public function settings_page() {
-
+    public function settings_page()
+    {
         if (!empty($_POST)) {
             if ($_POST['submit'] == "Reset") {
                 delete_option('cp_cptslotextended_approved');
