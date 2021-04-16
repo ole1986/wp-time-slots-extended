@@ -73,7 +73,11 @@ class Ole1986_AppointmentHourBookingExtendedDashboard extends Ole1986_SlotBase
                     <div><?php echo $item['formname'] ?></div>
                 </div>
                 <div class="detail">
-                    <?php echo $item['fieldname1'] ?>
+                    <?php 
+                    echo implode('', array_map(function ($v) {
+                        return '<div>' . $v['date'] . ' - ' . $v['slot'] . '</div>';
+                    }, $item['apps']));
+                    ?>
                 </div>
             </div>
             <?php
