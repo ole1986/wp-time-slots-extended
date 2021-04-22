@@ -48,7 +48,7 @@ class Ole1986_AppointmentHourBookingExtendedDashboard extends Ole1986_SlotBase
         if ($this->data) return;
 
         $curDate = date('Y-m-d');
-        $this->data = $wpdb->get_results('SELECT posted_data FROM '. $wpdb->prefix . $this->table_messages . ' WHERE posted_data LIKE \'%s:4:"date";s:10:"' . $curDate . '"%\'');
+        $this->data = $wpdb->get_results('SELECT posted_data FROM '. $wpdb->prefix . $this->table_messages . ' WHERE notifyto <> \'BLOCKED@BY.ADMIN\' AND posted_data LIKE \'%s:4:"date";s:10:"' . $curDate . '"%\'');
 
         $this->data = array_map(function ($v) {
             return unserialize($v->posted_data);
