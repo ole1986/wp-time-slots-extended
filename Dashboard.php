@@ -62,14 +62,32 @@ class Ole1986_AppointmentHourBookingExtendedDashboard extends Ole1986_SlotBase
         $slot = $_POST['slot'] ?? '';
         $filter = $_POST['filter'] ?? '';
 
+        $fieldname = get_option('cp_cptslotextended_dashboard_title', '%email%');
+        $fieldname = rtrim($fieldname, '%');
+        $fieldname = ltrim($fieldname, '%');
+
+
         foreach ($this->data as $item) {
-            if (!empty($slot) && $item['apps'][0]['slot'] != $slot) continue;
-            if (!empty($filter) && stripos($item['email'], $filter) === false) continue;
+            if (!empty($slot) && $item['apps'][0]['slot'] != $slot) { 
+                continue;
+            }
+
+            if (!isset($item[$fieldname])) {
+                $title_fieldname = 'email';
+            } else {
+                $title_fieldname = $fieldname;
+            }
+
+            if (!empty($filter) && stripos($item[$title_fieldname], $filter) === false) { 
+                continue;
+            }
+
+            $title = $item[$title_fieldname];
 
             ?>
             <div>
                 <div class="headline">
-                    <div><?php echo $item['email'] ?></div>
+                    <div><?php echo $title ?></div>
                     <div><?php echo $item['formname'] ?></div>
                 </div>
                 <div class="detail">
@@ -98,12 +116,15 @@ class Ole1986_AppointmentHourBookingExtendedDashboard extends Ole1986_SlotBase
             $slots = array_unique(array_column($apps, 'slot'));
             sort($slots);
         }
-        
+
         ?>
         <div id="wp_time_slots_extended_dashboard" class="custom-dash-box">
             <div style="display: flex; justify-content: space-between">
                 <div>
-                    <h3><?php _e('Slot Bookings for today', 'wp-time-slots-extended') ?></h3>
+                    <div>
+                        <?php _e('Slot Bookings for today', 'wp-time-slots-extended') ?>
+                    </div>
+                    <div style="margin-bottom: 1em;"><?php echo date_i18n("l, j. F Y") ?></div>
                     <a href="admin.php?page=cp_apphourbooking"><?php _e('Switch to calendar list', 'wp-time-slots-extended') ?></a>
                 </div>
                 <div>

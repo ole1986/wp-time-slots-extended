@@ -3,7 +3,7 @@
 Plugin Name: Appointment Hour Booking Extended
 Plugin URI: https://github.com/ole1986/wp-time-slots-extended
 Description: Appointment Hour Booking Extended Functions
-Version: 1.0.9
+Version: 1.0.10
 Author: ole1986
 License: MIT
 Text Domain: wp-time-slots-extended
@@ -11,20 +11,21 @@ Text Domain: wp-time-slots-extended
 
 defined('ABSPATH') or die('No script kiddies please!');
 
-define('WP_TIME_SLOTS_EXTENDED_VERSION', '1.0.9');
+define('WP_TIME_SLOTS_EXTENDED_VERSION', '1.0.10');
 
-include_once(ABSPATH.'wp-admin/includes/plugin.php');
+require_once ABSPATH.'wp-admin/includes/plugin.php';
 
 if (is_plugin_active('appointment-hour-booking/app-booking-plugin.php')) {
-    require_once __DIR__ .'/../appointment-hour-booking/classes/cp-base-class.inc.php';
+    include_once __DIR__ .'/../appointment-hour-booking/classes/cp-base-class.inc.php';
 } else if (is_plugin_active('wp-time-slots-booking-form/wp-time-slots-booking-plugin.php')) {
-    require_once __DIR__ .'/../wp-time-slots-booking-form/classes/cp-base-class.inc.php';
+    include_once __DIR__ .'/../wp-time-slots-booking-form/classes/cp-base-class.inc.php';
 }
 
 require_once 'Base.php';
 require_once 'Dashboard.php';
 
-class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase {
+class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase
+{
     /**
      * The unique instance of the plugin.
      *
@@ -109,6 +110,8 @@ class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase {
     {
         if (!empty($_POST)) {
             if ($_POST['submit'] == "Reset") {
+                delete_option('cp_cptslotextended_dashboard_title');
+
                 delete_option('cp_cptslotextended_approved');
                 delete_option('cp_cptslotextended_subject_approved');
                 delete_option('cp_cptslotextended_body_approved');
@@ -118,9 +121,10 @@ class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase {
                 delete_option('cp_cptslotextended_body_canceled');
 
                 delete_option('cp_cptslotextended_max_registration');
-                delete_option('cp_cptslotextended_max_registration_daily');
                 delete_option('cp_cptslotextended_max_registration_url');
             } else {
+                update_option('cp_cptslotextended_dashboard_title', sanitize_text_field($_POST['cp_cptslotextended_dashboard_title']));
+
                 update_option('cp_cptslotextended_approved', sanitize_key($_POST['cp_cptslotextended_approved']));
                 update_option('cp_cptslotextended_subject_approved', sanitize_text_field($_POST['cp_cptslotextended_subject_approved']));
                 update_option('cp_cptslotextended_body_approved', sanitize_textarea_field($_POST['cp_cptslotextended_body_approved']));
@@ -130,7 +134,6 @@ class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase {
                 update_option('cp_cptslotextended_body_canceled', sanitize_textarea_field($_POST['cp_cptslotextended_body_canceled']));
 
                 update_option('cp_cptslotextended_max_registration', sanitize_key($_POST['cp_cptslotextended_max_registration']));
-                update_option('cp_cptslotextended_max_registration_daily', sanitize_key($_POST['cp_cptslotextended_max_registration_daily']));
                 update_option('cp_cptslotextended_max_registration_url', sanitize_text_field($_POST['cp_cptslotextended_max_registration_url']));
             }
         }
@@ -138,6 +141,11 @@ class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase {
         ?>
         <h1>WP Time Slots Extended</h1>
         <form name="updatesettings" action="" method="post">
+            <h3><?php _e('Dashboard Widget', 'wp-time-slots-extended') ?></h3>
+            <p>
+                <label><?php _e('Choose a field name (availble in the form) to display as title - always fallback to %email% if unavailable', 'wp-time-slots-extended') ?></label><br />
+                <input type="text" name="cp_cptslotextended_dashboard_title" size="70" value="<?php echo esc_attr(get_option('cp_cptslotextended_dashboard_title', '%email%')); ?>" /><br />
+            </p>
             <h3><?php _e('Email notification on Approval', 'wp-time-slots-extended') ?></h3>
             <p>
                 <label><input type="checkbox" name="cp_cptslotextended_approved" value="1" <?php echo (get_option('cp_cptslotextended_approved', 0) ? 'checked' : '') ?>>
@@ -191,14 +199,16 @@ class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase {
         global $wpdb;
 
         // allow adding additionals, with the same email from admin area
-        if (is_admin()) return;
+        if (is_admin()) { return;
+        }
 
         $selectedDate = $params['apps'][0]['date'];
 
         $maxAllowedRegistrations = intval(get_option('cp_cptslotextended_max_registration', ''));
 
         // skip max allowed registration check
-        if (empty($maxAllowedRegistrations)) return;
+        if (empty($maxAllowedRegistrations)) { return;
+        }
         
         $countResult = $wpdb->get_col($wpdb->prepare('SELECT COUNT(*) FROM `'.$wpdb->prefix.$this->table_messages.'` WHERE DATE(time) = CURDATE() AND formid = %d AND notifyto = %s', $params['formid'], $params['email']));
 
@@ -211,45 +221,48 @@ class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase {
         }
     }
 
-    public function onUpdateStatus($id, $status) {
+    public function onUpdateStatus($id, $status)
+    {
         global $wpdb;
 
         if (is_subclass_of($this, 'CP_APPBOOK_BaseClass')) {
-            define('CP_APPBOOK_DEFAULT_fp_from_email', get_the_author_meta('user_email', get_current_user_id()) );
+            define('CP_APPBOOK_DEFAULT_fp_from_email', get_the_author_meta('user_email', get_current_user_id()));
             $from = $this->get_option('fp_from_email', @CP_APPBOOK_DEFAULT_fp_from_email);
         } else {
-            define('CP_TSLOTSBOOK_DEFAULT_fp_from_email', get_the_author_meta('user_email', get_current_user_id()) );
+            define('CP_TSLOTSBOOK_DEFAULT_fp_from_email', get_the_author_meta('user_email', get_current_user_id()));
             $from = $this->get_option('fp_from_email', @CP_TSLOTSBOOK_DEFAULT_fp_from_email);
         }
 
-        $events = $wpdb->get_results( $wpdb->prepare('SELECT * FROM `'.$wpdb->prefix.$this->table_messages.'` WHERE id=%d', $id) );
+        $events = $wpdb->get_results($wpdb->prepare('SELECT * FROM `'.$wpdb->prefix.$this->table_messages.'` WHERE id=%d', $id));
         $posted_data = unserialize($events[0]->posted_data);
 
         $status = strtolower($status);
 
         switch($status) {
-            case '':
-                if (empty(get_option('cp_cptslotextended_approved'))) return;
-                $subject = get_option('cp_cptslotextended_subject_approved', 'Your Slot has been approved');
-                $body = get_option('cp_cptslotextended_body_approved',  "Dear %email%,\r\n\r\nWe have just confirmed your slot on %formname% / %fieldname1%");
-                break;
-            case 'rejected':
-            case 'canceled':
-            case 'cancelled':
-                if (empty(get_option('cp_cptslotextended_canceled'))) return;
-                $subject = get_option('cp_cptslotextended_subject_canceled', 'Your Slot has been CANCELED');
-                $body = get_option('cp_cptslotextended_body_canceled',  "Dear %email%,\r\n\r\nwe deeply regret that we had to cance your slot on %formname% / %fieldname1%");
-                break;
+        case '':
+            if (empty(get_option('cp_cptslotextended_approved'))) { return;
+            }
+            $subject = get_option('cp_cptslotextended_subject_approved', 'Your Slot has been approved');
+            $body = get_option('cp_cptslotextended_body_approved',  "Dear %email%,\r\n\r\nWe have just confirmed your slot on %formname% / %fieldname1%");
+            break;
+        case 'rejected':
+        case 'canceled':
+        case 'cancelled':
+            if (empty(get_option('cp_cptslotextended_canceled'))) { return;
+            }
+            $subject = get_option('cp_cptslotextended_subject_canceled', 'Your Slot has been CANCELED');
+            $body = get_option('cp_cptslotextended_body_canceled',  "Dear %email%,\r\n\r\nwe deeply regret that we had to cance your slot on %formname% / %fieldname1%");
+            break;
         }
 
         foreach ($posted_data as $item => $value) {
-            $body = str_replace('%'.$item.'%',(is_array($value)?(implode(", ",$value)):($value)),$body);
+            $body = str_replace('%'.$item.'%', (is_array($value)?(implode(", ", $value)):($value)), $body);
         }
     
         wp_mail(trim($posted_data['email']), $subject . ' / ' . $posted_data['formname'], $body,
-                    "From: $from <".$from.">\r\n".
+            "From: $from <".$from.">\r\n".
                     'text/plain'.
-                    "X-Mailer: PHP/" . phpversion());
+        "X-Mailer: PHP/" . phpversion());
     }
 }
 

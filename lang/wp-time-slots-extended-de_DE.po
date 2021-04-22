@@ -56,3 +56,6 @@ msgstr "Benachrichtige den Benutzer sobald der gebuchte Slot den Status genehmig
 
 msgid "Notify the user when its booked slot status has been changed to canceled"
 msgstr "Benachrichtige den Benutzer sobald der gebuchte Slot den Status abgelehnt erhält"
+
+msgid "Choose a field name (availble in the form) to display as title - always fallback to %email% if unavailable"
+msgstr "Wähle ein Feldname (im Formular vorhanden) um diesen als Titel anzuzeigen - wird immer auf %email% zurückfallen wenn nicht verfügbar"
