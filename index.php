@@ -3,7 +3,7 @@
 Plugin Name: Appointment Hour Booking Extended
 Plugin URI: https://github.com/ole1986/wp-time-slots-extended
 Description: Appointment Hour Booking Extended Functions
-Version: 1.0.10
+Version: 1.0.11
 Author: ole1986
 License: MIT
 Text Domain: wp-time-slots-extended
@@ -11,7 +11,7 @@ Text Domain: wp-time-slots-extended
 
 defined('ABSPATH') or die('No script kiddies please!');
 
-define('WP_TIME_SLOTS_EXTENDED_VERSION', '1.0.10');
+define('WP_TIME_SLOTS_EXTENDED_VERSION', '1.0.11');
 
 require_once ABSPATH.'wp-admin/includes/plugin.php';
 
@@ -58,6 +58,9 @@ class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase
             return;
         }
         
+        register_activation_hook(__FILE__, [$this, 'plugin_activate']);
+        register_deactivation_hook(__FILE__,  [$this, 'plugin_deactivate']);
+        
         // appointment-hour-booking
         add_action('cpappb_update_status', [$this, 'onUpdateStatus'], 10, 2);
         // wp-time-slots-booking-form
@@ -74,6 +77,21 @@ class Ole1986_AppointmentHourBookingExtended extends Ole1986_SlotBase
         add_action('admin_head', [$this, 'scripts']);
 
         new Ole1986_AppointmentHourBookingExtendedDashboard();
+    }
+
+    public function plugin_activate()
+    {
+        $ahb_module = __DIR__ . '/../appointment-hour-booking/js/fields-public/36_fbuilder.fapp.getCurrentSlots.js';
+        @copy(__DIR__ . '/scripts/36_fbuilder.fapp.getCurrentSlots.js', $ahb_module);
+    }
+
+    public function plugin_deactivate()
+    {
+        $ahb_module = __DIR__ . '/../appointment-hour-booking/js/fields-public/36_fbuilder.fapp.getCurrentSlots.js';
+
+        if (file_exists($ahb_module)) {
+            unlink($ahb_module);
+        }
     }
 
     public function scripts()
